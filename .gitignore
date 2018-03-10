@@ -1,0 +1,5 @@
+# Python files
+*.pyc
+
+# Windows shortcut to git shell
+Git Shell.lnk
