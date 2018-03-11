@@ -23,6 +23,8 @@ class TestClean(unittest.TestCase):
                 '123 Main St, 1st Floor, New York Ny, 10001',
             '123 main st floor 5 new york ny 10001':
                 '123 Main St, Floor 5, New York Ny, 10001',
+            'PO. box 1234 city state 12345':
+                'P.O. Box 1234, City, State, 12345',
         }
         for data, expected in cases.items():
             actual = clean(data)

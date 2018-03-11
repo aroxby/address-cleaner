@@ -47,7 +47,9 @@ def clean(line):
             if re.match(regex, arr[idx], re.IGNORECASE):
                 arr[idx] = arr[idx][0] + arr[idx][1].lower() + arr[idx][2:]
 
-    return ', '.join(_ for _ in arr)
+    assembled = ', '.join(_ for _ in arr)
+    assembled.replace('Po Box', 'P.O. Box')
+    return assembled
 
 
 def bulk_clean(inp, outp, errp=sys.stderr):
