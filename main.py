@@ -10,8 +10,11 @@ def clean(line):
     """
     Cleans a single line address
     """
-    num_regexs = ['^1st', '^2nd', '^3rd', '^\\dth']
-    apt_regexs = num_regexs + ['^apt', '^unit', '^#', 'floor']
+    street_regexs = ['street$', 'st$',  'road$', 'rd$', 'drive$', 'dr$', 'avenue$', 'ave$']
+    street_regexs += ['place$', 'pl$', 'boulevard$', 'blvd$']
+    street_regexs += ['way$', 'grove$']
+    num_regexs = ['^1st', '^2nd', '^3rd', r'^\d+th']
+    apt_regexs = num_regexs + ['^apt', '^unit', '^#', 'floor', 'building']
     zip_regexs = [r'^\d{5}([-\s]\d{4})?$']
 
     line = line.replace(',', ' ').replace('.', ' ').lower()
@@ -29,6 +32,9 @@ def clean(line):
             for regex in zip_regexs:
                 if re.match(regex, part):
                     idx += 1
+            for regex in street_regexs:
+                if re.match(regex, part):
+                    skip = True
         else:
             greedy = False
             skip = True
