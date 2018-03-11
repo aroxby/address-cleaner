@@ -14,7 +14,7 @@ def clean(line):
     apt_regexs = num_regexs + ['^apt', '^unit', '^#', 'floor']
     zip_regexs = [r'^\d{5}([-\s]\d{4})?$']
 
-    line = line.replace(',', ' ').lower()
+    line = line.replace(',', ' ').replace('.', ' ').lower()
     parts = [_ for _ in line.split() if _]  # Nonempty line portions
     arr = []  # Parsed address tokens
     idx = 0  # Array write index
