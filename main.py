@@ -55,6 +55,15 @@ def clean(line):
             idx += 1
             skip = False
 
+    if not has_street:
+        raise ValueError('Missing street name')
+
+    if not has_zip:
+        raise ValueError('Missing zip code')
+
+    if len(arr) < 2:
+        raise ValueError('Nothing before zip code')
+
     arr = [_ for _ in arr if _]
     for idx in range(len(arr)):
         arr[idx] = arr[idx].strip().title()
