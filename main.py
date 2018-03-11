@@ -39,6 +39,7 @@ def clean(line):
             idx += 1
             skip = False
 
+    arr = [_ for _ in arr if _]
     for idx in range(len(arr)):
         arr[idx] = arr[idx].strip().title()
         # All this just to fix .title() from producing things like (3Rd Floor)
