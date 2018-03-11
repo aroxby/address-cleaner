@@ -23,18 +23,28 @@ def clean(line):
     idx = 0  # Array write index
     greedy = False  # Always grab the next part with parsing
     skip = False  # Always increase the index after the next section
+    has_street = False  # Remember if we found a street
+    has_appt = False  # Remember if we found an apartment
+    has_zip = False  # Remember if we found a zip code
     for part in parts:
+        if has_zip:
+            raise ValueError('Information after zip code')
         if not greedy:
-            for regex in apt_regexs:
-                if re.match(regex, part):
-                    idx += 1
-                    greedy = True
+            if has_street:
+                # We have to find a street before we can find an apartment
+                for regex in apt_regexs:
+                    if re.match(regex, part):
+                        idx += 1
+                        greedy = True
+                        has_appt = True
             for regex in zip_regexs:
                 if re.match(regex, part):
                     idx += 1
+                    has_zip = True
             for regex in street_regexs:
                 if re.match(regex, part):
                     skip = True
+                    has_street = True
         else:
             greedy = False
             skip = True
