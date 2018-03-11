@@ -5,6 +5,7 @@ Clean and format mailing addresses
 import sys
 import re
 
+
 def title_case(s):
     """
     Converts a string to title case without breaking on "'"s
@@ -15,6 +16,7 @@ def title_case(s):
 
     regex = r"[A-Za-z]+('[A-Za-z]+)?"
     return re.sub(regex, _title, s)
+
 
 def clean(line):
     """
