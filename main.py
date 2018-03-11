@@ -5,20 +5,33 @@ Clean and format mailing addresses
 import sys
 import re
 
+def title_case(s):
+    """
+    Converts a string to title case without breaking on "'"s
+    Taken from Python docs
+    """
+    def _title(match):
+        return match.group(0)[0].upper() + match.group(0)[1:].lower()
+
+    regex = r"[A-Za-z]+('[A-Za-z]+)?"
+    return re.sub(regex, _title, s)
 
 def clean(line):
     """
     Cleans a single line address
     """
-    street_regexs = ['street$', 'st$',  'road$', 'rd$', 'drive$', 'dr$', 'avenue$', 'ave$']
-    street_regexs += ['place$', 'pl$', 'boulevard$', 'blvd$', 'court$', 'ct$']
-    street_regexs += ['way$', 'wy$', 'grove$', 'gr$']
-    num_regexs = ['^1st', '^2nd', '^3rd', r'^\d+th']
-    apt_regexs = num_regexs + ['^apt', '^unit', '^#', 'floor', 'building']
+    num_regexs = ['1st', '2nd', '3rd', r'\d+th']
+    street_regexs = ['^street$', '^st$',  '^road$', '^rd$', '^drive$', '^dr$', '^avenue$', 'ave$']
+    street_regexs += ['^place$', '^pl$', '^boulevard$', '^blvd$', '^court$', '^ct$']
+    street_regexs += ['^way$', '^wy$', '^grove$', '^gr$']
+    street_regexs += ['^way$', '^wy$', '^grove$', '^gr$']
+    apt_regexs = ['^'+_+'$' for _ in num_regexs]
+    apt_regexs += ['^apt$', '^unit$', '^#$', '^floor$', '^building$']
     zip_regexs = [r'^\d{5}([-\s]\d{4})?$']
+    po_regexs = ['(p\W?o box )(\d+)']
 
     line = line.replace(',', ' ').replace('.', ' ').lower()
-    parts = [_ for _ in line.split() if _]  # Nonempty line portions
+    parts = [_.strip() for _ in line.split() if _]  # Nonempty line portions
     arr = []  # Parsed address tokens
     idx = 0  # Array write index
     greedy = False  # Always grab the next part with parsing
@@ -26,9 +39,10 @@ def clean(line):
     has_street = False  # Remember if we found a street
     has_appt = False  # Remember if we found an apartment
     has_zip = False  # Remember if we found a zip code
+    has_po = False  # Remember if address is a PO box
     for part in parts:
         if has_zip:
-            raise ValueError('Information after zip code')
+            raise ValueError('Information after zip code for \'{}\''.format(line))
         if not greedy:
             if has_street:
                 # We have to find a street before we can find an apartment
@@ -55,25 +69,33 @@ def clean(line):
             idx += 1
             skip = False
 
-    if not has_street:
-        raise ValueError('Missing street name')
+    if not arr:
+        raise ValueError('No address')
+
+    for po_regex in po_regexs:
+        arr[0], count = re.subn(po_regex, 'P.O. Box \\2,', arr[0], flags=re.IGNORECASE)
+        if count > 0:
+            arr = arr[0].split(',') + arr[1:]
+            has_po = True
+
+    if not has_street and not has_po:
+        raise ValueError('Missing street name for \'{}\''.format(line))
 
     if not has_zip:
-        raise ValueError('Missing zip code')
+        raise ValueError('Missing zip code for \'{}\''.format(line))
 
     if len(arr) < 2:
-        raise ValueError('Nothing before zip code')
+        raise ValueError('Nothing before zip code for \'{}\''.format(line))
 
     arr = [_ for _ in arr if _]
     for idx in range(len(arr)):
-        arr[idx] = arr[idx].strip().title()
+        arr[idx] = title_case(arr[idx].strip())
         # All this just to fix .title() from producing things like (3Rd Floor)
         for regex in num_regexs:
-            if re.match(regex, arr[idx], re.IGNORECASE):
-                arr[idx] = arr[idx][0] + arr[idx][1].lower() + arr[idx][2:]
+            arr[idx] = re.sub(regex, lambda s: s[0].lower(), arr[idx], flags=re.IGNORECASE)
 
     assembled = ', '.join(_ for _ in arr)
-    assembled.replace('Po Box', 'P.O. Box')
+
     return assembled
 
 
