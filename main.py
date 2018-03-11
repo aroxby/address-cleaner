@@ -45,7 +45,7 @@ def clean(line):
     has_any = False  # Remember if the loop as run yet
     for part in parts:
         if has_zip:
-            raise ValueError('Information after zip code for \'{}\''.format(line))
+            raise ValueError('Information after zip code \'{}\' for \'{}\''.format(part, line))
         if not greedy:
             if has_street:
                 # We have to find a street before we can find an apartment
@@ -84,13 +84,13 @@ def clean(line):
             has_po = True
 
     if not has_street and not has_po:
-        raise ValueError('Missing street name for \'{}\''.format(line))
+        raise ValueError('Missing street name for \'{}\''.format(line.strip()))
 
     if not has_zip:
-        raise ValueError('Missing zip code for \'{}\''.format(line))
+        raise ValueError('Missing zip code for \'{}\''.format(line.strip()))
 
     if len(arr) < 2:
-        raise ValueError('Nothing before zip code for \'{}\''.format(line))
+        raise ValueError('Nothing before zip code for \'{}\''.format(line.strip()))
 
     arr = [_ for _ in arr if _]
     for idx in range(len(arr)):
@@ -109,11 +109,12 @@ def bulk_clean(inp, outp, errp=sys.stderr):
     Cleans all lines of a file
     """
     for line in inp:
-        cleaned = clean(line)
-        if cleaned:
-            print(cleaned, file=outp)
-        else:
-            print("Invalid Address\n{}\n".format(line), file=errp)
+        try:
+            cleaned = clean(line)
+        except Exception as e:
+            print(e, file=errp)
+            print(line.strip(), file=outp)
+        print(cleaned, file=outp)
 
 
 def main(argv):
