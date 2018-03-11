@@ -24,9 +24,9 @@ def clean(line):
     """
     num_regexs = ['1st', '2nd', '3rd', r'\d+th']
     street_regexs = ['^street$', '^st$',  '^road$', '^rd$', '^drive$', '^dr$', '^avenue$', 'ave$']
-    street_regexs += ['^place$', '^pl$', '^boulevard$', '^blvd$', '^court$', '^ct$']
-    street_regexs += ['^way$', '^wy$', '^grove$', '^gr$']
-    street_regexs += ['^way$', '^wy$', '^grove$', '^gr$']
+    street_regexs += ['^place$', '^pl$', '^boulevard$', '^blvd$', '^court$', '^ct$', '^lane$', '^ln$']
+    street_regexs += ['^way$', '^wy$', '^grove$', '^gr$', '^circle$', '^cr$']
+    street_regexs += ['^trl$', '^broadyway$', '^center$']
     apt_regexs = ['^'+_+'$' for _ in num_regexs]
     apt_regexs += ['^apt$', '^unit$', '^#$', '^floor$', '^building$']
     zip_regexs = [r'^\d{5}([-\s]\d{4})?$']
@@ -42,6 +42,7 @@ def clean(line):
     has_appt = False  # Remember if we found an apartment
     has_zip = False  # Remember if we found a zip code
     has_po = False  # Remember if address is a PO box
+    has_any = False  # Remember if the loop as run yet
     for part in parts:
         if has_zip:
             raise ValueError('Information after zip code for \'{}\''.format(line))
@@ -53,10 +54,11 @@ def clean(line):
                         idx += 1
                         greedy = True
                         has_appt = True
-            for regex in zip_regexs:
-                if re.match(regex, part):
-                    idx += 1
-                    has_zip = True
+            if has_any:
+                for regex in zip_regexs:
+                    if re.match(regex, part):
+                        idx += 1
+                        has_zip = True
             for regex in street_regexs:
                 if re.match(regex, part):
                     skip = True
@@ -70,6 +72,7 @@ def clean(line):
         if skip:
             idx += 1
             skip = False
+        has_any = True
 
     if not arr:
         raise ValueError('No address')
